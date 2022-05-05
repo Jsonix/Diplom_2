@@ -19,7 +19,7 @@ public class UserClient extends RestClient{
     }
 
 
-    public ValidatableResponse login(User user){
+    public static ValidatableResponse login(User user){
         return given()
                 .spec(getBaseSpec())
                 .body(user)
@@ -28,7 +28,7 @@ public class UserClient extends RestClient{
                 .then();
     }
 
-    public ValidatableResponse getUserData(String token){
+    public static ValidatableResponse getUserData(String token){
         return given()
                 .header("Authorization", token)
                 .spec(getBaseSpec())
@@ -37,7 +37,7 @@ public class UserClient extends RestClient{
                 .then();
     }
 
-    public ValidatableResponse changeUserData(String token, User user){
+    public static ValidatableResponse changeUserData(String token, User user){
         return given()
                 .header("Authorization", token)
                 .spec(getBaseSpec())
@@ -47,7 +47,7 @@ public class UserClient extends RestClient{
                 .then();
     }
 
-    public void deleteUser(String token){
+    public static void deleteUser(String token){
         given()
                 .header("Authorization", token)
                 .spec(getBaseSpec()).when()
@@ -56,11 +56,11 @@ public class UserClient extends RestClient{
                 .assertThat().statusCode(202);
     }
 
-    public String getToken(User user){
+    public static String getToken(User user){
         return login(user).extract().path("accessToken");
     }
 
-    public void deleteUser(User user) {
+    public static void deleteUser(User user) {
         if (getToken(user) != null) {
             deleteUser(getToken(user));
         }

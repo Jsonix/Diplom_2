@@ -3,30 +3,28 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.apache.http.HttpStatus.*;
+import static org.apache.http.HttpStatus.SC_OK;
+import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 public class LoginTest {
 
-    private UserClient userClient;
-    private User user;
+    private final User user = User.getRandomUser();
 
     @Before
     public void setUp() {
-        userClient = new UserClient();
-        user = User.getRandomUser();
-        userClient.createUser(user);
+        UserClient.createUser(user);
     }
 
     @After
     public void tearDown(){
-        userClient.deleteUser(user);
+        UserClient.deleteUser(user);
     }
 
     @Test
     public void userCanLoginWithExistingCredentials(){
-        ValidatableResponse loginResponse = userClient.login(new User(user.getEmail(), user.getPassword(), user.getName()));
+        ValidatableResponse loginResponse = UserClient.login(new User(user.getEmail(), user.getPassword(), user.getName()));
         boolean result = loginResponse.extract().path("success");
         int statusCode = loginResponse.extract().statusCode();
 
@@ -36,7 +34,7 @@ public class LoginTest {
 
     @Test
     public void userCantLoginWithNonExistingEmail(){
-        ValidatableResponse loginResponse = userClient.login(new User("NonExistingEmail@praktikum.ru", user.getPassword(), user.getName()));
+        ValidatableResponse loginResponse = UserClient.login(new User("NonExistingEmail@praktikum.ru", user.getPassword(), user.getName()));
         boolean result = loginResponse.extract().path("success");
         String message = loginResponse.extract().path("message");
         int statusCode = loginResponse.extract().statusCode();
@@ -48,7 +46,7 @@ public class LoginTest {
 
     @Test
     public void userCantLoginWithNonExistingPassword(){
-        ValidatableResponse loginResponse = userClient.login(new User(user.getEmail(), "NonExistingPassword", user.getName()));
+        ValidatableResponse loginResponse = UserClient.login(new User(user.getEmail(), "NonExistingPassword", user.getName()));
         boolean result = loginResponse.extract().path("success");
         String message = loginResponse.extract().path("message");
         int statusCode = loginResponse.extract().statusCode();

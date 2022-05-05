@@ -3,32 +3,31 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.apache.http.HttpStatus.*;
+import static org.apache.http.HttpStatus.SC_FORBIDDEN;
+import static org.apache.http.HttpStatus.SC_OK;
+import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 public class ChangingUserDataTest {
 
-    private UserClient userClient;
-    private User user;
+    private final User user = User.getRandomUser();
 
     @Before
     public void setUp() {
-        userClient = new UserClient();
-        user = User.getRandomUser();
-        userClient.createUser(user);
+        UserClient.createUser(user);
     }
 
     @After
     public void tearDown(){
-        userClient.deleteUser(user);
+        UserClient.deleteUser(user);
     }
 
     @Test
     public void userCanUpdateEmail(){
         String newEmail = User.getRandomEmail();
         User newUser = new User(newEmail, user.getPassword(), user.getName());
-        ValidatableResponse changeResponse = userClient.changeUserData(userClient.getToken(user), newUser);
+        ValidatableResponse changeResponse = UserClient.changeUserData(UserClient.getToken(user), newUser);
         boolean result = changeResponse.extract().path("success");
         String email = changeResponse.extract().path("user.email");
         int statusCode = changeResponse.extract().statusCode();
@@ -42,7 +41,7 @@ public class ChangingUserDataTest {
     public void userCanUpdatePassword(){
         String newPassword = User.getRandomData();
         User newUser = new User(user.getEmail(), newPassword, user.getName());
-        ValidatableResponse changeResponse = userClient.changeUserData(userClient.getToken(user), newUser);
+        ValidatableResponse changeResponse = UserClient.changeUserData(UserClient.getToken(user), newUser);
         boolean result = changeResponse.extract().path("success");
         int statusCode = changeResponse.extract().statusCode();
 
@@ -54,7 +53,7 @@ public class ChangingUserDataTest {
     public void userCanUpdateName(){
         String newName = User.getRandomData();
         User newUser = new User(user.getEmail(), user.getPassword(), newName);
-        ValidatableResponse changeResponse = userClient.changeUserData(userClient.getToken(user), newUser);
+        ValidatableResponse changeResponse = UserClient.changeUserData(UserClient.getToken(user), newUser);
         boolean result = changeResponse.extract().path("success");
         String email = changeResponse.extract().path("user.name");
         int statusCode = changeResponse.extract().statusCode();
@@ -66,7 +65,7 @@ public class ChangingUserDataTest {
 
     @Test
     public void userCantUpdateDataIfHeDidntLoggedIn(){
-        ValidatableResponse changeResponse = userClient.changeUserData("", user);
+        ValidatableResponse changeResponse = UserClient.changeUserData("", user);
         boolean result = changeResponse.extract().path("success");
         String message = changeResponse.extract().path("message");
         int statusCode = changeResponse.extract().statusCode();
@@ -79,12 +78,12 @@ public class ChangingUserDataTest {
     @Test
     public void userCanUpdateEmailWhichAlreadyInUse(){
         User user2 = User.getRandomUser();
-        userClient.createUser(user2);
+        UserClient.createUser(user2);
 
         String newEmail = user2.getEmail();
         User newUser = new User (newEmail, user.getPassword(), user.getName());
 
-        ValidatableResponse changeResponse = userClient.changeUserData(userClient.getToken(user), newUser);
+        ValidatableResponse changeResponse = UserClient.changeUserData(UserClient.getToken(user), newUser);
         String email = changeResponse.extract().path("user.email");
         boolean result = changeResponse.extract().path("success");
         String message = changeResponse.extract().path("message");

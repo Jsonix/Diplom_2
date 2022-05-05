@@ -1,22 +1,23 @@
 import io.restassured.response.ValidatableResponse;
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import static org.apache.http.HttpStatus.*;
+import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
+import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
+import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 public class CreateOrderTest {
 
-    private UserClient userClient;
-    private User user;
+    private final User user = User.getRandomUser();
     List<String> ingredients = new ArrayList<>();
+
 
     public int randomNumber(){
         Random rand = new Random();
@@ -24,15 +25,9 @@ public class CreateOrderTest {
         return rand.nextInt(upperbound);
     }
 
-    @Before
-    public void setUp() {
-        userClient = new UserClient();
-        user = User.getRandomUser();
-    }
-
     @After
     public void tearDown(){
-        userClient.deleteUser(user);
+        UserClient.deleteUser(user);
     }
 
     @Test
@@ -40,7 +35,7 @@ public class CreateOrderTest {
         String accessToken = UserClient.createUser(user).extract().path("accessToken");
         ingredients = OrderClient.getIngredients().extract().path("data._id");
         Ingredients orderIngredients = new Ingredients(ingredients.get(randomNumber()));
-        ValidatableResponse createOrder = new OrderClient().createOrder(orderIngredients, accessToken);
+        ValidatableResponse createOrder = OrderClient.createOrder(orderIngredients, accessToken);
         int statusCode = createOrder.extract().statusCode();
         boolean result = createOrder.extract().path("success");
         int number = createOrder.extract().path("order.number");
@@ -54,7 +49,7 @@ public class CreateOrderTest {
     public void userCanCreateAnOrderWithoutLogin(){
         ingredients = OrderClient.getIngredients().extract().path("data._id");
         Ingredients orderIngredients = new Ingredients(ingredients.get(randomNumber()));
-        ValidatableResponse createOrder = new OrderClient().createOrder(orderIngredients, "");
+        ValidatableResponse createOrder = OrderClient.createOrder(orderIngredients, "");
         int statusCode = createOrder.extract().statusCode();
         boolean result = createOrder.extract().path("success");
         int number = createOrder.extract().path("order.number");
@@ -68,7 +63,7 @@ public class CreateOrderTest {
     public void userCantCreateAnOrderWithoutIngredients(){
         String accessToken = UserClient.createUser(user).extract().path("accessToken");
         Ingredients orderIngredients = new Ingredients("");
-        ValidatableResponse createOrder = new OrderClient().createOrder(orderIngredients, accessToken);
+        ValidatableResponse createOrder = OrderClient.createOrder(orderIngredients, accessToken);
         int statusCode = createOrder.extract().statusCode();
         boolean result = createOrder.extract().path("success");
         String message = createOrder.extract().path("message");
@@ -82,7 +77,7 @@ public class CreateOrderTest {
     public void userCantCreateAnOrderWithoutWrongIngredient(){
         String accessToken = UserClient.createUser(user).extract().path("accessToken");
         Ingredients orderIngredients = new Ingredients("Ingredient");
-        ValidatableResponse createOrder = new OrderClient().createOrder(orderIngredients, accessToken);
+        ValidatableResponse createOrder = OrderClient.createOrder(orderIngredients, accessToken);
         int statusCode = createOrder.extract().statusCode();
 
         assertThat(statusCode, equalTo(SC_INTERNAL_SERVER_ERROR));

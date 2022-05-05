@@ -7,15 +7,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import static org.apache.http.HttpStatus.*;
+import static org.apache.http.HttpStatus.SC_OK;
+import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 public class OrderListTest {
 
-    private UserClient userClient;
-    private User user;
+    private final User user = User.getRandomUser();
     List<String> ingredients = new ArrayList<>();
     public String orderIngredients;
     String accessToken;
@@ -29,8 +28,6 @@ public class OrderListTest {
 
     @Before
     public void setUp() {
-        userClient = new UserClient();
-        user = User.getRandomUser();
         ingredients = OrderClient.getIngredients().extract().path("data._id");
         orderIngredients = ingredients.get(randomNumber());
         accessToken = UserClient.createUser(user).extract().path("accessToken");
@@ -39,7 +36,7 @@ public class OrderListTest {
 
     @After
     public void tearDown(){
-        userClient.deleteUser(user);
+        UserClient.deleteUser(user);
     }
 
     @Test

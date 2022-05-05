@@ -1,7 +1,5 @@
 import io.restassured.response.ValidatableResponse;
 
-import java.util.ArrayList;
-
 import static io.restassured.RestAssured.given;
 
 public class OrderClient extends RestClient{
@@ -9,7 +7,7 @@ public class OrderClient extends RestClient{
     public static final String INGREDIENTS_PATH = "api/ingredients";
     public static final String ORDERS_PATH = "api/orders";
 
-    public ValidatableResponse createOrder(Ingredients ingredients, String token){
+    public static ValidatableResponse createOrder(Ingredients ingredients, String token){
         return given()
                 .headers("Authorization", token)
                 .spec(getBaseSpec())
